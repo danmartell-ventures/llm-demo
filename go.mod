@@ -1,0 +1,3 @@
+module llm-demo
+
+go 1.22.5

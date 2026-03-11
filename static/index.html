@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LLM Journey — Watch Your Words Travel Through a Language Model</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="progress-bar" class="hidden">
+  <div class="progress-track">
+    <div class="progress-fill" id="progress-fill"></div>
+  </div>
+  <div class="progress-steps" id="progress-steps"></div>
+</div>
+
+<div id="mode-toggle" class="hidden">
+  <button id="toggle-technical" title="Toggle technical details">
+    <span class="toggle-icon">∑</span>
+    <span class="toggle-label">Simple</span>
+  </button>
+</div>
+
+<section id="landing" class="step active">
+  <div class="step-content landing-content">
+    <div class="hero-icon">🧠</div>
+    <h1>Watch Your Words Travel Through an LLM</h1>
+    <p class="subtitle">Type a phrase and follow it step-by-step through tokenization, embeddings, attention, the forward pass, and next-token prediction.</p>
+    <div class="input-group">
+      <input type="text" id="phrase-input" placeholder="The cat sat on the mat" maxlength="100" autofocus>
+      <button id="begin-btn" class="btn-primary">Begin →</button>
+    </div>
+    <div class="suggestions">
+      <span>Try:</span>
+      <button class="suggestion" data-text="The cat sat on the mat">The cat sat on the mat</button>
+      <button class="suggestion" data-text="Hello world">Hello world</button>
+      <button class="suggestion" data-text="How does attention work">How does attention work</button>
+      <button class="suggestion" data-text="The transformer model uses attention">The transformer model uses attention</button>
+    </div>
+  </div>
+</section>
+
+<section id="step-1" class="step">
+  <div class="step-content">
+    <div class="step-header">
+      <div class="step-number">1</div>
+      <div>
+        <h2>Tokenize</h2>
+        <p class="step-subtitle">Breaking text into pieces the model can understand</p>
+      </div>
+    </div>
+    <p class="step-description">Your phrase is split into <strong>tokens</strong> — subword units from the model's vocabulary. Each token gets a numeric ID.</p>
+    <div class="technical-detail hidden">
+      <p>BPE (Byte Pair Encoding) iteratively merges the most frequent character pairs. The vocabulary (~32K–100K tokens) balances between character-level and word-level representations. Common words are single tokens; rare words split into subwords.</p>
+    </div>
+    <div class="viz-container" id="tokenizer-viz">
+      <div class="original-phrase" id="original-phrase"></div>
+      <div class="arrow-down">↓</div>
+      <div class="token-display" id="token-display"></div>
+      <div class="token-stats" id="token-stats"></div>
+    </div>
+  </div>
+</section>
+
+<section id="step-2" class="step">
+  <div class="step-content">
+    <div class="step-header">
+      <div class="step-number">2</div>
+      <div>
+        <h2>Embed</h2>
+        <p class="step-subtitle">Converting tokens into meaning-vectors</p>
+      </div>
+    </div>
+    <p class="step-description">Each token becomes a high-dimensional vector that captures its meaning. Similar words land near each other in this space.</p>
+    <div class="technical-detail hidden">
+      <p>Each token ID indexes into a learned embedding matrix E ∈ ℝ<sup>V×d</sup>. Real models use d=768–12288 dimensions. The vectors encode semantic and syntactic properties through training on massive text corpora.</p>
+    </div>
+    <div class="viz-container">
+      <div class="embed-tokens" id="embed-tokens"></div>
+      <div class="embed-scatter-wrap">
+        <canvas id="scatter-canvas" width="600" height="400"></canvas>
+        <div class="scatter-legend" id="scatter-legend"></div>
+      </div>
+      <div class="vector-display" id="vector-display"></div>
+    </div>
+  </div>
+</section>
+
+<section id="step-3" class="step">
+  <div class="step-content">
+    <div class="step-header">
+      <div class="step-number">3</div>
+      <div>
+        <h2>Attention</h2>
+        <p class="step-subtitle">Tokens decide which other tokens matter</p>
+      </div>
+    </div>
+    <p class="step-description">Each token looks at every other token and assigns an <strong>attention weight</strong> — how relevant is that token for understanding me?</p>
+    <div class="technical-detail hidden">
+      <p>Attention(Q,K,V) = softmax(QK<sup>T</sup>/√d<sub>k</sub>)V. Queries, Keys, and Values are linear projections. Multiple heads (typically 8–96) attend to different relationship types simultaneously.</p>
+    </div>
+    <div class="viz-container">
+      <div class="attention-head-tabs" id="attention-tabs"></div>
+      <div class="attention-viz-area">
+        <canvas id="attention-canvas" width="600" height="400"></canvas>
+      </div>
+      <div class="attention-arcs" id="attention-arcs"></div>
+    </div>
+  </div>
+</section>
+
+<section id="step-4" class="step">
+  <div class="step-content">
+    <div class="step-header">
+      <div class="step-number">4</div>
+      <div>
+        <h2>Forward Pass</h2>
+        <p class="step-subtitle">Data flows through the transformer architecture</p>
+      </div>
+    </div>
+    <p class="step-description">Your tokens flow through layers of the transformer — each layer refines the representation using attention and feed-forward networks.</p>
+    <div class="technical-detail hidden">
+      <p>Each layer: x → MultiHeadAttention(x) + x → LayerNorm → FFN(x) + x → LayerNorm. The residual connections ("+x") help gradients flow. Real models stack 12–96 of these layers.</p>
+    </div>
+    <div class="viz-container">
+      <div class="forward-pass-diagram" id="forward-pass-diagram"></div>
+    </div>
+  </div>
+</section>
+
+<section id="step-5" class="step">
+  <div class="step-content">
+    <div class="step-header">
+      <div class="step-number">5</div>
+      <div>
+        <h2>Predict Next Token</h2>
+        <p class="step-subtitle">What comes next?</p>
+      </div>
+    </div>
+    <p class="step-description">The model outputs a probability for every possible next token. Temperature and top-p control how "creative" the sampling is.</p>
+    <div class="technical-detail hidden">
+      <p>Final hidden states project to vocabulary-sized logits via W<sub>out</sub>. Temperature T scales logits: P(i) = exp(z<sub>i</sub>/T) / Σ exp(z<sub>j</sub>/T). Top-p (nucleus) sampling truncates to smallest set with cumulative probability ≥ p.</p>
+    </div>
+    <div class="viz-container">
+      <div class="predict-controls">
+        <div class="slider-group">
+          <label>Temperature: <span id="temp-val">1.0</span></label>
+          <input type="range" id="temp-slider" min="0.1" max="2.0" step="0.1" value="1.0">
+          <div class="slider-labels"><span>Focused</span><span>Creative</span></div>
+        </div>
+        <div class="slider-group">
+          <label>Top-p: <span id="topp-val">0.9</span></label>
+          <input type="range" id="topp-slider" min="0.1" max="1.0" step="0.05" value="0.9">
+          <div class="slider-labels"><span>Narrow</span><span>Wide</span></div>
+        </div>
+      </div>
+      <div class="predict-chart-area">
+        <canvas id="predict-canvas" width="600" height="300"></canvas>
+      </div>
+      <div class="predict-actions">
+        <div class="current-phrase" id="current-phrase"></div>
+        <button id="sample-btn" class="btn-primary">🎲 Sample Next Token</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div id="nav-buttons" class="hidden">
+  <button id="prev-btn" class="btn-nav">← Previous</button>
+  <button id="start-over-btn" class="btn-nav btn-restart">↺ Start Over</button>
+  <button id="next-btn" class="btn-nav btn-primary">Next →</button>
+</div>
+
+<script src="visualizations.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
